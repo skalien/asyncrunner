@@ -6,8 +6,9 @@ class Runner:
     def __init__(self, cmd):
         self.cmd = cmd
         self.process = None
-        self.stream = None
+        self._stream = None
         self._stdout = []
+        self._last_idx = 0
 
     async def run(self):
         self.process = await asyncio.create_subprocess_exec(
@@ -15,16 +16,16 @@ class Runner:
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.STDOUT,
         )
-        self.stream = self.process.stdout
+        self._stream = self.process.stdout
         asyncio.create_task(self.stream_reader())
 
     async def stream_reader(self):
-        async for line in self.stream:
+        async for line in self._stream:
             decoded = line.decode().strip()
             self._stdout.append(f"{decoded}")
 
-    def stdout(self):
-        return "\n".join(self._stdout)
+    def stdout(self, idx=0):
+        return "\n".join(self._stdout[idx:])
 
     async def terminate(self):
         try:
@@ -40,6 +41,14 @@ class Runner:
     def resume(self):
         self.process.send_signal(signal.SIGCONT)
 
+    def is_running(self):
+        return self.process.returncode is None
+
+    def last_stdout(self):
+        last_idx = self._last_idx
+        self._last_idx = len(self._stdout)
+        return self.stdout(last_idx)
+
 
 async def main():
     cmd = "ping -c 5 google.com"
@@ -48,18 +57,10 @@ async def main():
     runner = Runner(cmd)
     await runner.run()
 
-    for i in range(10):
-        print("====")
-        print(f"i={i}")
-        print("====")
-        print(runner.stdout())
-        print()
+    while runner.is_running():
+        print(runner.last_stdout())
         await asyncio.sleep(1)
-
-        if i == 1:
-            runner.pause()
-        if i == 5:
-            runner.resume()
+    print(runner.last_stdout())
 
 
 if __name__ == "__main__":
