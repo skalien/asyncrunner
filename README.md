@@ -5,9 +5,7 @@ AsyncRunner is an asynchronous terminal command launcher from a python script. Y
 ## Installation
 
 ```
-git clone <this repo>
-cd asyncrunner
-pip install -e .
+pip install https://github.com/skalien/asyncrunner.git
 ```
 
 ## Usage
