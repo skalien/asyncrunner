@@ -46,8 +46,13 @@ class Runner:
 
     def last_stdout(self):
         last_idx = self._last_idx
-        self._last_idx = len(self._stdout)
-        return self.stdout(last_idx)
+        current_idx = len(self._stdout)
+
+        if last_idx == current_idx:
+            return None
+        else:
+            self._last_idx = current_idx
+            return self.stdout(last_idx)
 
 
 async def main():
