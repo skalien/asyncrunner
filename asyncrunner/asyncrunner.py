@@ -27,9 +27,12 @@ class Runner:
         return "\n".join(self._stdout)
 
     async def terminate(self):
-        self.process.kill()
-        await self.process.wait()
-        return self.process.returncode
+        try:
+            self.process.kill()
+            await self.process.wait()
+            return self.process.returncode
+        except ProcessLookupError:
+            pass
 
     def pause(self):
         self.process.send_signal(signal.SIGSTOP)
