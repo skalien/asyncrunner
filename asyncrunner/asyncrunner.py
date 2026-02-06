@@ -59,6 +59,7 @@ class Runner:
             await asyncio.sleep(polling_rate)
             if not self.is_running():
                 return
+        self.terminate()
 
     def returncode(self):
         return self.process.returncode
