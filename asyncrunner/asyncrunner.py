@@ -57,7 +57,8 @@ class Runner:
     async def wait_till_finish(self, polling_rate=0.25, timeout=10, on_poll=None):
         for _ in range(int(timeout / polling_rate)):
             await asyncio.sleep(polling_rate)
-            await on_poll()
+            if on_poll:
+                await on_poll()
             if not self.is_running():
                 return
         self.terminate()
