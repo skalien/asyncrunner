@@ -54,18 +54,24 @@ class Runner:
             self._last_idx = current_idx
             return self.stdout(last_idx)
 
+    async def wait_till_finish(self, polling_rate=0.25, timeout=10):
+        for _ in range(int(timeout / polling_rate)):
+            await asyncio.sleep(polling_rate)
+            if not self.is_running():
+                return
+
+    def returncode(self):
+        return self.process.returncode
+
 
 async def main():
-    cmd = "python some_func.py"
+    cmd = "ping -c 3 google.com"
     cmd = cmd.split(" ")
 
     runner = Runner(cmd)
     await runner.run()
+    await runner.wait_till_finish()
 
-    for _ in range(5):
-        await asyncio.sleep(0.25)
-        if not runner.is_running():
-            break
     print(runner.stdout())
 
 
