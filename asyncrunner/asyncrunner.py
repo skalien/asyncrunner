@@ -10,11 +10,11 @@ class Runner:
         self._stdout = []
         self._last_idx = 0
 
-    async def run(self):
+    async def run(self, stderr: bool = True):
         self.process = await asyncio.create_subprocess_exec(
             *self.cmd,
             stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.STDOUT,
+            stderr=asyncio.subprocess.STDOUT if stderr else asyncio.subprocess.PIPE,
         )
         self._stream = self.process.stdout
         asyncio.create_task(self.stream_reader())
@@ -56,16 +56,17 @@ class Runner:
 
 
 async def main():
-    cmd = "ping -c 5 google.com"
+    cmd = "python some_func.py"
     cmd = cmd.split(" ")
 
     runner = Runner(cmd)
     await runner.run()
 
-    while runner.is_running():
-        print(runner.last_stdout())
-        await asyncio.sleep(1)
-    print(runner.last_stdout())
+    for _ in range(5):
+        await asyncio.sleep(0.25)
+        if not runner.is_running():
+            break
+    print(runner.stdout())
 
 
 if __name__ == "__main__":
