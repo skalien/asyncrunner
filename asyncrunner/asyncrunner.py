@@ -54,9 +54,10 @@ class Runner:
             self._last_idx = current_idx
             return self.stdout(last_idx)
 
-    async def wait_till_finish(self, polling_rate=0.25, timeout=10):
+    async def wait_till_finish(self, polling_rate=0.25, timeout=10, on_poll=None):
         for _ in range(int(timeout / polling_rate)):
             await asyncio.sleep(polling_rate)
+            await on_poll()
             if not self.is_running():
                 return
         self.terminate()
@@ -71,7 +72,11 @@ async def main():
 
     runner = Runner(cmd)
     await runner.run()
-    await runner.wait_till_finish()
+
+    async def dots():
+        print(".", end="", flush=True)
+
+    await runner.wait_till_finish(on_poll=dots)
 
     print(runner.stdout())
 
